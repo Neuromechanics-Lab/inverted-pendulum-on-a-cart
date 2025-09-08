@@ -1,5 +1,5 @@
 %% ODE for inverted pendulum 
-function dX = dPendulumStates(t, X, ang_acc, cart_acc_spline, M, m, l_lumped, alpha, I_lumped, kp, kv, ka, timestep, iter, delay)
+function [dX,cart_trq,gravity_trq,musc_trq] = dPendulumStatesAndTrqs(t, X, ang_acc, cart_acc_spline, M, m, l_lumped, alpha, I_lumped, kp, kv, ka, timestep, iter, delay)
 % X = [angle; angular velocity]
 
 % persistent pastX % persistent variable to check past timestep doesn't
@@ -13,6 +13,9 @@ if abs(X(iter-1,1))>=deg2rad(90) % making the pendulum stop falling once it hits
     % gravity_ang_acc = 0;
     % cart_ang_acc = 0;
     % spring_ang_acc = 0;
+    cart_trq = 0;
+    gravity_trq = 0;
+    musc_trq = 0;
     total_ang_acc = 0;
 else 
     % cart_ang_acc = ((M+m)*ppval(cart_acc_spline,t)*cos(X(1)+alpha)*l_lumped)/I_lumped;                              
