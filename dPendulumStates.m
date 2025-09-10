@@ -31,7 +31,7 @@ else
 
     % now what if the ankle had a gain for angle, ang vel, and ang acc?
     % total_ang_acc = (cart_ang_acc+gravity_ang_acc-kp*X(iter-1,1)-kv*X(iter-1,2))/(I_lumped+ka);
-    musc_trq = -kp*X(iter-delay,1)-kv*X(iter-delay,2)-ka*ang_acc(iter-delay,1);
+    musc_trq = -kp*(X(iter-delay,1)+alpha)-kv*X(iter-delay,2)-ka*ang_acc(iter-delay,1);
     total_ang_acc = (cart_trq+gravity_trq+musc_trq)/I_lumped;
 
     % if isempty(pastX)
