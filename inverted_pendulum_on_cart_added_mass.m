@@ -14,7 +14,7 @@ x_a = 1; % added mass height (m)
 y_a = 0.5; % added mass horizontal offset from pendulum arm (m)
 % k = 20; % torsional spring constant, need to add as a param in func if you want to uncomment this
 
-alpha = atan((m*y_a)/(M*l+m*x_a));
+theta_a = atan((m*y_a)/(M*l+m*x_a));
 l_lumped = sqrt(((M*l+m*x_a)/(M+m))^2+((m*y_a)/(M+m))^2);
 I_lumped = M*l^2+m*(x_a^2+y_a^2);
 
@@ -34,7 +34,7 @@ cart_acc_spline = spline(temp_t,temp_acc*50);
 
 % run ODE solver
 odeopt = odeset('maxstep',1e-2);
-[t_sim,x_sim] = ode45(@(t,x)dPendulumStates(t, x, cart_acc_spline, M, m, l_lumped, alpha, I_lumped), ...
+[t_sim,x_sim] = ode45(@(t,x)dPendulumStates(t, x, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped), ...
     temp_t, ... simulation time range 
     [0, 0], ... initial condition [angle, angular velocity] 
     odeopt);

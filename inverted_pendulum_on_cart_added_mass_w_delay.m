@@ -6,7 +6,7 @@
 % And common time delay, lambda
 
 clc; clear; 
-close all;
+% close all;
 
 % for y_a=[-0.5 0 0.5] % for when I want to vary one component
 
@@ -18,12 +18,12 @@ x_a = 0.87; % added mass height (m)
 y_a = 0.15; % added mass horizontal offset from pendulum arm (m)
 % k = 20; % torsional spring constant, need to add as a param in func if you want to uncomment this
 
-alpha = atan((m*y_a)/(M*l+m*x_a));
+theta_a = atan((m*y_a)/(M*l+m*x_a));
 l_lumped = sqrt(((M*l+m*x_a)/(M+m))^2+((m*y_a)/(M+m))^2);
 I_lumped = M*l^2+m*(x_a^2+y_a^2);
 
-% kp = 660; % angle gain
-% kv = 1200; % angular velocity gain
+kp = 660; % angle gain
+kv = 7200; % angular velocity gain 1300 1600 2200 3400 7200
 ka = 0; % angular acceleration gain (infinitely expanding sin wave when ka>=59)
 delay = 0; % common time delay (ms), must be <2s and must be an integer
 
@@ -40,16 +40,16 @@ cart_acc_spline = spline(temp_t,temp_acc*50);
 
 % clear dPendulumStates % trying to reset pastX, which is a persistent variable
 
-% looping through potential gain values to make a 3d plot
-settlingTimes = []; muscPowerInt = [];
-kp_array = 500:20:1000; kv_array = 1000:100:3000;
-kp_iter = 0;
-for kp = kp_array
-    kp_iter = kp_iter + 1;
-    kv_iter = 0;
-
-    for kv = kv_array
-        kv_iter = kv_iter + 1;
+% % looping through potential gain values to make a 3d plot
+% settlingTimes = []; muscPowerInt = [];
+% kp_array = 500:10:850; kv_array = 10000:100:20000;
+% kp_iter = 0;
+% for kp = kp_array
+%     kp_iter = kp_iter + 1;
+%     kv_iter = 0;
+% 
+%     for kv = kv_array
+%         kv_iter = kv_iter + 1;
 
         % use the forward Euler method to find solution with the time delay
         x_sim = zeros(2000,2); % x_sim = [angle, angular velocity]
@@ -57,7 +57,7 @@ for kp = kp_array
         ang_acc = zeros(2000,1);
         cartTrq = []; gravTrq = []; muscTrq = [];
         for iter = 2000:2000+size(temp_t,2)
-            [dX,cart_trq,gravity_trq,musc_trq] = dPendulumStatesAndTrqs(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, alpha, I_lumped, kp, kv, ka, timestep, iter, delay);
+            [dX,cart_trq,gravity_trq,musc_trq] = dPendulumStatesAndTrqs(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, timestep, iter, delay);
             new_x1 = x_sim(iter,1)+timestep*dX(1,:);
             new_x2 = x_sim(iter,2)+timestep*dX(2,:);
             x_sim = [x_sim;new_x1,new_x2];
@@ -71,14 +71,14 @@ for kp = kp_array
         t_sim = t_sim(2001:size(t_sim,1),:);
         ang_acc = ang_acc(2001:size(ang_acc,1),:);
 
-        x_simInfo = stepinfo(x_sim(:,1),t_sim);
-        settlingTimes(kp_iter,kv_iter) = x_simInfo.SettlingTime;
+        % x_simInfo = stepinfo(x_sim(:,1),t_sim);
+        % settlingTimes(kp_iter,kv_iter) = x_simInfo.SettlingTime;
+        % 
+        % muscPower = muscTrq.*x_sim(:,2);
+        % muscPowerInt(kp_iter,kv_iter) = trapz(abs(muscPower));
 
-        muscPower = muscTrq.*x_sim(:,2);
-        muscPowerInt(kp_iter,kv_iter) = trapz(abs(muscPower));
-
-    end
-end 
+%     end
+% end 
 
 %% plot gains sweep with optimizing options
 figure(1)
@@ -86,7 +86,7 @@ surf(kp_array,kv_array,settlingTimes')
 xlabel('kp')
 ylabel('kv')
 zlabel('Settling Time (s)')
-figName = ['SettlingTime_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+figName = ['SurfSettlingTime_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
 savefig(figName)
 
 figure(2)
@@ -94,8 +94,41 @@ surf(kp_array,kv_array,muscPowerInt')
 xlabel('kp')
 ylabel('kv')
 zlabel('Area Under Power Curve')
-figName = ['Power_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+figName = ['SurfPower_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
 savefig(figName)
+
+figure(3)
+contour(kp_array,kv_array,settlingTimes')
+xlabel('kp')
+ylabel('kv')
+zlabel('Settling Time (s)')
+colorbar;
+figName = ['ContourSettlingTime_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+
+figure(4)
+contour(kp_array,kv_array,muscPowerInt')
+xlabel('kp')
+ylabel('kv')
+zlabel('Area Under Power Curve')
+colorbar;
+figName = ['ContourPower_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+
+figure(5)
+hold on;
+s1 = surf(kp_array,kv_array,settlingTimes');
+s2 = surf(kp_array,kv_array,muscPowerInt');
+set(s1, 'FaceAlpha', 0.6, 'FaceColor', [0, 0, 1]);
+set(s1, 'EdgeColor', 'none'); 
+set(s2, 'FaceAlpha', 0.6, 'FaceColor', [1, 0, 0]); 
+set(s2, 'EdgeColor', 'none'); 
+xlabel('kp')
+ylabel('kv')
+zlabel('Combined Settling Time (s) and Area Under Power Curve')
+figName = ['SurfCombined_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+hold off;
 
 % clear dPendulumStates % trying to reset pastX, which is a persistent variable
 % dX = [;];
@@ -105,14 +138,16 @@ savefig(figName)
 % end 
 
 %% plot result (ang, ang vel, ang acc, trqs)
-figure(1)
-numplots = 21;
+% figure(1)
+numplots = 16;
 subplot(numplots,1,1)
 plot(temp_t, temp_acc);
 ylabel('cart acceleration')
+% title(['k_p = ',int2str(kp),', k_v = ',int2str(kv),', k_a = ',int2str(ka),', delay = ',int2str(delay)])
+title(['k_v = ',int2str(kv),', k_a = ',int2str(ka),', delay = ',int2str(delay)])
 subplot(numplots,1,3:6)
 plot(t_sim, x_sim(:,1));
-% hold on
+hold on
 % ylim([-0.1 0.4])
 ylabel('angle (rad)')
 subplot(numplots,1,8:11)
@@ -120,20 +155,24 @@ plot(t_sim, x_sim(:,2))
 xlabel('time (s)')
 ylabel('angular velocity (rad/s)')
 linkaxes(get(gcf, 'Children'),'x')
-% hold on
+hold on
 subplot(numplots,1,13:16)
 plot(t_sim,ang_acc(:,1))
 xlabel('time (s)')
 ylabel('angular acceleration (rad/s^2)')
-% hold on
-subplot(numplots,1,18:21)
-plot(t_sim,gravTrq)
 hold on
-plot(t_sim,cartTrq)
-plot(t_sim,muscTrq)
-xlabel('time (s)')
-ylabel('torque (N*m)')
-legend('Gravity','Cart','Muscles')
+
+% subplot(numplots,1,18:21)
+% plot(t_sim,gravTrq)
+% hold on
+% plot(t_sim,cartTrq)
+% plot(t_sim,muscTrq)
+% xlabel('time (s)')
+% ylabel('torque (N*m)')
+% legend('Gravity','Cart','Muscles')
+
+% figName = ['ModelOutput_kp',int2str(kp),'_kv',int2str(kv),'_ka',int2str(ka),'_delay',int2str(delay),'.fig'];
+% savefig(figName)
 
 % legend('kp=0,kv=0,ka=0,delay=0,added mass=0','kp=660,kv=1200,ka=0,delay=0,added mass=0')
 

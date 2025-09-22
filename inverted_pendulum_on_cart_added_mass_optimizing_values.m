@@ -16,7 +16,7 @@ x_a = 1; % added mass height (m)
 y_a = 0.5; % added mass horizontal offset from pendulum arm (m)
 % k = 20; % torsional spring constant, need to add as a param in func if you want to uncomment this
 
-alpha = atan((m*y_a)/(M*l+m*x_a));
+theta_a = atan((m*y_a)/(M*l+m*x_a));
 l_lumped = sqrt(((M*l+m*x_a)/(M+m))^2+((m*y_a)/(M+m))^2);
 I_lumped = M*l^2+m*(x_a^2+y_a^2);
 
@@ -48,7 +48,7 @@ for kp = 600:20:700 % angle gain
                 t_sim = zeros(2000,1);
                 ang_acc = zeros(2000,1);
                 for iter = 2000:2000+size(temp_t,2)
-                    dX = dPendulumStates(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, alpha, I_lumped, kp, kv, ka, timestep, iter, delay);
+                    dX = dPendulumStates(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, timestep, iter, delay);
                     new_x1 = x_sim(iter,1)+timestep*dX(1,:);
                     new_x2 = x_sim(iter,2)+timestep*dX(2,:);
                     x_sim = [x_sim;new_x1,new_x2];
@@ -90,7 +90,7 @@ for vals = 1:size(best_vals,1)
     t_sim = zeros(2000,1);
     ang_acc = zeros(2000,1);
     for iter = 2000:2000+size(temp_t,2)
-        dX = dPendulumStates(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, alpha, I_lumped, kp_best, kv_best, ka_best, timestep, iter, delay_best);
+        dX = dPendulumStates(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp_best, kv_best, ka_best, timestep, iter, delay_best);
         new_x1 = x_sim(iter,1)+timestep*dX(1,:);
         new_x2 = x_sim(iter,2)+timestep*dX(2,:);
         x_sim = [x_sim;new_x1,new_x2];

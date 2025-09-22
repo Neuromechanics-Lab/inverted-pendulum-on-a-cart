@@ -1,5 +1,5 @@
 %% ODE for inverted pendulum 
-function [dX,cart_trq,gravity_trq,musc_trq] = dPendulumStatesAndTrqs(t, X, ang_acc, cart_acc_spline, M, m, l_lumped, alpha, I_lumped, kp, kv, ka, timestep, iter, delay)
+function [dX,cart_trq,gravity_trq,musc_trq] = dPendulumStatesAndTrqs(t, X, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, timestep, iter, delay)
 % X = [angle; angular velocity]
 
 % persistent pastX % persistent variable to check past timestep doesn't
@@ -20,8 +20,8 @@ if abs(X(iter-1,1))>=deg2rad(90) % making the pendulum stop falling once it hits
 else 
     % cart_ang_acc = ((M+m)*ppval(cart_acc_spline,t)*cos(X(1)+alpha)*l_lumped)/I_lumped;                              
     % gravity_ang_acc = ((M+m)*9.81*sin(X(1)+alpha)*l_lumped)/I_lumped;
-    cart_trq = ((M+m)*ppval(cart_acc_spline,t(iter))*cos(X(iter,1)+alpha)*l_lumped);                              
-    gravity_trq = ((M+m)*9.81*sin(X(iter,1)+alpha)*l_lumped);
+    cart_trq = ((M+m)*ppval(cart_acc_spline,t(iter))*cos(X(iter,1)+theta_a)*l_lumped);                              
+    gravity_trq = ((M+m)*9.81*sin(X(iter,1)+theta_a)*l_lumped);
 
     % spring_ang_acc = -k*X(1)/I_lumped; % adding a torsional spring at pivot point
 
@@ -34,7 +34,7 @@ else
 
     % now what if the ankle had a gain for angle, ang vel, and ang acc?
     % total_ang_acc = (cart_ang_acc+gravity_ang_acc-kp*X(iter-1,1)-kv*X(iter-1,2))/(I_lumped+ka);
-    musc_trq = -kp*(X(iter-delay,1)+alpha)-kv*X(iter-delay,2)-ka*ang_acc(iter-delay,1);
+    musc_trq = -kp*(X(iter-delay,1)+theta_a)-kv*X(iter-delay,2)-ka*ang_acc(iter-delay,1);
     total_ang_acc = (cart_trq+gravity_trq+musc_trq)/I_lumped;
 
     % if isempty(pastX)
