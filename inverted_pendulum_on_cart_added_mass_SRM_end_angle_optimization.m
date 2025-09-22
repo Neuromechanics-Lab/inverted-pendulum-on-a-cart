@@ -4,31 +4,35 @@
 % Torque at pivot point modelled as:
 % T = kp*theta + kv*theta_dot + ka*theta_ddot
 % And common time delay, lambda
-% Optimizing gain values and time delay to stabilize pendulum quickly 
+% Optimizing gain values to minimize ending angle
 
 clc; clear; close all;
 
 % Defining variables
-M = 77; % body mass (kg) (77kg = avg for women in US)
+M = 73.5; % body mass (kg) (73.5kg = 50th percentile for women in US)
 m = 0; % added mass (kg) (9kg = CDC recommended weight gain for 30 weeks pregant w normal starting BMI)
-l = 0.87; % body COM height (m) (0.87m = avg for women in US)
-x_a = 1; % added mass height (m)
-y_a = 0.5; % added mass horizontal offset from pendulum arm (m)
-% k = 20; % torsional spring constant, need to add as a param in func if you want to uncomment this
+h = 1.704; % overall height (m) (1.612m = 50th percentile for women in US)
+l = 0.543*h; % body COM height (m) (avg COM height in women is 0.543*overall height)
+x_a = 0.87; % added mass height (m)
+y_a = 0.15; % added mass horizontal offset from pendulum arm (m)
 
 theta_a = atan((m*y_a)/(M*l+m*x_a));
 l_lumped = sqrt(((M*l+m*x_a)/(M+m))^2+((m*y_a)/(M+m))^2);
 I_lumped = M*l^2+m*(x_a^2+y_a^2);
 
-% Define acceleration profile. 
+simTime = 2; % how much time is simulated (seconds)
 timestep = 0.001;
-temp_t = 0:timestep:5;
+pertDuration = 10; % number of timesteps cart takes to accelerate and decelerate
+cart_acc_time = 500; % number of time steps before cart begins accelerating
+cart_dec_time = 1000; % number of time steps before cart begins decelerating
+
+% Defining cart acceleration profile 
+temp_t = 0:timestep:simTime;
 temp_acc = zeros(size(temp_t));
-perturb_num = 10;
-temp_acc( (0:perturb_num)+500) = ...
-    -cos((0:perturb_num)*2*pi/perturb_num)+1; % acceleration
-temp_acc( (0:perturb_num)+1000) = ...
-    cos((0:perturb_num)*2*pi/perturb_num)-1; % deceleration 
+temp_acc((0:pertDuration)+cart_acc_time) = ...
+    -cos((0:pertDuration)*2*pi/pertDuration)+1; % acceleration
+temp_acc((0:pertDuration)+cart_dec_time) = ...
+    cos((0:pertDuration)*2*pi/pertDuration)-1; % deceleration 
 cart_acc_spline = spline(temp_t,temp_acc*50);
 
 %%
@@ -40,7 +44,7 @@ for kp = 600:20:700 % angle gain
     for kv = 1100:20:1200 % angular velocity gain
         % for ka = 0:0.25:1 % angular acceleration gain
             ka = 0;
-            current = [kp,kv,ka]
+            % current = [kp,kv,ka]
             % for delay = 0:50:500 % common time delay (ms), must be <2s and must be an integer
                 delay = 0;
                 % use the forward Euler method to find solution with the time delay
@@ -48,9 +52,13 @@ for kp = 600:20:700 % angle gain
                 t_sim = zeros(2000,1);
                 ang_acc = zeros(2000,1);
                 for iter = 2000:2000+size(temp_t,2)
-                    dX = dPendulumStates(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, timestep, iter, delay);
+                    dX = dPendulumStates(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay);
                     new_x1 = x_sim(iter,1)+timestep*dX(1,:);
-                    new_x2 = x_sim(iter,2)+timestep*dX(2,:);
+                    if new_x1>=deg2rad(90)
+                        new_x2 = 0;
+                    else 
+                        new_x2 = x_sim(iter,2)+timestep*dX(2,:);
+                    end 
                     x_sim = [x_sim;new_x1,new_x2];
                     t_sim = [t_sim;(iter-2000)*timestep];
                     ang_acc = [ang_acc;dX(2,:)];
