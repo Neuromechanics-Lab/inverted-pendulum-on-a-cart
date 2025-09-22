@@ -6,7 +6,7 @@
 function [dX,cart_trq,gravity_trq,musc_trq] = dPendulumDemo(t, X, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay)
 
 if abs(X(iter,1))>=deg2rad(90) % making the pendulum stop falling once it hits the cart
-    X(iter,2)=0;
+    X(iter,2) = 0;
     cart_trq = 0;
     gravity_trq = 0;
     musc_trq = 0;
