@@ -1,3 +1,4 @@
+% From Hansol Ryu 2025
 
 % Define acceleration profile. 
 % I defined as a time series and passed it to ODE as a spline. 
