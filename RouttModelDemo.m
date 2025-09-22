@@ -91,14 +91,14 @@ xlabel('time (s)')
 ylabel('angular acceleration (rad/s^2)')
 hold on;
 
-% subplot(numplots,1,19:22)
-% plot(t_sim,gravTrq)
-% hold on
-% plot(t_sim,cartTrq)
-% plot(t_sim,muscTrq)
-% xlabel('time (s)')
-% ylabel('torque (N*m)')
-% legend('Gravity','Cart','Muscles')
+subplot(numplots,1,19:22)
+plot(t_sim,gravTrq)
+hold on
+plot(t_sim,cartTrq)
+plot(t_sim,muscTrq)
+xlabel('time (s)')
+ylabel('torque (N*m)')
+legend('Gravity','Cart','Muscles')
 
 % fileString = ['kp',num2str(kp),'_kv',num2str(kv),'_ka',num2str(ka),'_delay'...
 %     ,num2str(delay),'_M',num2str(M),'_l',num2str(l),'_m',num2str(m)...
