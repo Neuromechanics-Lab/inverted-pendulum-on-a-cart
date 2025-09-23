@@ -73,7 +73,7 @@ for kp = kp_array
             cartTrq = [cartTrq;cart_trq];
             gravTrq = [gravTrq;gravity_trq];
             muscTrq = [muscTrq;musc_trq];
-            if settlingTime==simTime && (iter-2000)>dec_end && abs(x_sim(iter))<deg2rad(90)
+            if settlingTime==simTime && (iter-2000)>dec_end && abs(x_sim(iter,1))<deg2rad(90)
                 recentAngVelVals = x_sim(iter-(0:50),2);
                 angVelNearZero = abs(recentAngVelVals) < 0.02;
                 % slopeAngVel = (x_sim(iter,2)-x_sim(iter-50,2))/(50*timestep);
@@ -89,7 +89,7 @@ for kp = kp_array
         t_sim = t_sim(2001:size(t_sim,1),:);
         ang_acc = ang_acc(2001:size(ang_acc,1),:);
 
-        x_simInfo = stepinfo(x_sim(:,1),t_sim);
+        % x_simInfo = stepinfo(x_sim(:,1),t_sim);
         settlingTimes(kp_iter,kv_iter) = settlingTime;
         % settlingTimes(kp_iter,kv_iter) = x_simInfo.SettlingTime;
 
@@ -99,6 +99,80 @@ for kp = kp_array
         muscImpulse(kp_iter,kv_iter) = trapz(muscTrq);
     end
 end 
+%% 
+% plot combined outcome variables using cost functions
+
+STnorm = settlingTimes./max(settlingTimes,[],'all');
+GWnorm = muscGrossWork./max(muscGrossWork,[],'all');
+NWnorm = abs(muscNetWork)./max(abs(muscNetWork),[],'all');
+Inorm = abs(muscImpulse)./max(abs(muscImpulse),[],'all');
+
+CF1 = (STnorm+GWnorm)/2;
+CF2 = (STnorm+NWnorm)/2;
+CF3 = (STnorm+Inorm)/2;
+
+fig=figure;
+surf(kp_array,kv_array,CF1')
+xlabel('kp')
+ylabel('kv')
+zlabel('Settling Time (s) and Gross Work')
+figName = ['Output/SurfSTnormGWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+pngName = ['Output/SurfSTnormGWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.png'];
+saveas(fig,pngName)
+
+fig=figure;
+contour(kp_array,kv_array,CF1')
+xlabel('kp')
+ylabel('kv')
+title('Settling Time (s) and Gross Work')
+colorbar;
+figName = ['Output/ContourSTnormGWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+pngName = ['Output/ContourSTnormGWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.png'];
+saveas(fig,pngName)
+
+fig=figure;
+surf(kp_array,kv_array,CF2')
+xlabel('kp')
+ylabel('kv')
+zlabel('Settling Time (s) and Net Work')
+figName = ['Output/SurfSTnormNWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+pngName = ['Output/SurfSTnormNWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.png'];
+saveas(fig,pngName)
+
+fig=figure;
+contour(kp_array,kv_array,CF2')
+xlabel('kp')
+ylabel('kv')
+title('Settling Time (s) and Net Work')
+colorbar;
+figName = ['Output/ContourSTnormNWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+pngName = ['Output/ContourSTnormNWnorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.png'];
+saveas(fig,pngName)
+
+fig=figure;
+surf(kp_array,kv_array,CF3')
+xlabel('kp')
+ylabel('kv')
+zlabel('Settling Time (s) and Impulse')
+figName = ['Output/SurfSTnormInorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+pngName = ['Output/SurfSTnormInorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.png'];
+saveas(fig,pngName)
+
+fig=figure;
+contour(kp_array,kv_array,CF3')
+xlabel('kp')
+ylabel('kv')
+title('Settling Time (s) and Impulse')
+colorbar;
+figName = ['Output/ContourSTnormInorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.fig'];
+savefig(figName)
+pngName = ['Output/ContourSTnormInorm_kp',int2str(kp_array(1,1)),'to',int2str(kp_array(1,end)),'_kv',int2str(kv_array(1,1)),'to',int2str(kv_array(1,end)),'.png'];
+saveas(fig,pngName)
 
 %%
 % plot gains sweep with outcome variables
