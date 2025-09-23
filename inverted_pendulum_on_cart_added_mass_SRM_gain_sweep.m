@@ -74,10 +74,14 @@ for kp = kp_array
             gravTrq = [gravTrq;gravity_trq];
             muscTrq = [muscTrq;musc_trq];
             if settlingTime==simTime && (iter-2000)>dec_end && abs(x_sim(iter))<deg2rad(90)
-                recentAngVelVals = x_sim(iter-(0:500),2);
-                angVelNearZero = abs(recentAngVelVals) < 0.01;
-                if sum(angVelNearZero)==501
-                    settlingTime = (iter-2500)*timestep;
+                recentAngVelVals = x_sim(iter-(0:50),2);
+                angVelNearZero = abs(recentAngVelVals) < 0.02;
+                % slopeAngVel = (x_sim(iter,2)-x_sim(iter-50,2))/(50*timestep);
+                recentAngAccVals = ang_acc(iter-(0:50),1);
+                angAccNearZero = abs(recentAngAccVals) < 0.02;
+                % if sum(angVelNearZero)==51 && slopeAngVel < 0.1
+                if sum(angVelNearZero)==51 && sum(angAccNearZero)==51
+                    settlingTime = (iter-2050)*timestep;
                 end 
             end 
         end 

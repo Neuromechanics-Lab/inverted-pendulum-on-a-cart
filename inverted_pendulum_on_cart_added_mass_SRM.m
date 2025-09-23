@@ -20,8 +20,8 @@ theta_a = atan((m*y_a)/(M*l+m*x_a));
 l_lumped = sqrt(((M*l+m*x_a)/(M+m))^2+((m*y_a)/(M+m))^2);
 I_lumped = M*l^2+m*(x_a^2+y_a^2);
 
-kp = 210; % angle gain 210
-kv = 130; % angular velocity gain 120, 130
+kp = 680; % angle gain
+kv = 10; % angular velocity gain
 ka = 0; % angular acceleration gain
 delay = 0; % common time delay (ms), must be <2s and must be an integer
 
@@ -67,7 +67,7 @@ ang_acc = ang_acc(2001:size(ang_acc,1),:);
 
 
 % plot result (ang, ang vel, ang acc, trqs)
-figure
+% figure
 numplots = 22;
 subplot(numplots,1,1:2)
 plot(temp_t, temp_acc);
@@ -75,35 +75,34 @@ ylabel('cart acceleration')
 titleString = ['k_p=',num2str(kp),', k_v=',num2str(kv),', k_a=',num2str(ka),...
     ', delay=',num2str(delay),', M=',num2str(M),', l=',num2str(l),...
     ', m=',num2str(m),', x_a=',num2str(x_a),', y_a=',num2str(y_a)];
-title(titleString)
+% title(titleString)
 
 subplot(numplots,1,4:7)
 plot(t_sim, x_sim(:,1));
 ylabel('angle (rad)')
-% hold on
+hold on
 
 subplot(numplots,1,9:12)
 plot(t_sim, x_sim(:,2))
 % xlabel('time (s)')
 ylabel('angular velocity (rad/s)')
-linkaxes(get(gcf, 'Children'),'x')
-% hold on
+hold on
 
 subplot(numplots,1,14:17)
 plot(t_sim,ang_acc(:,1))
 % xlabel('time (s)')
 ylabel('angular acceleration (rad/s^2)')
-% hold on
+hold on
 
 subplot(numplots,1,19:22)
-plot(t_sim,gravTrq)
-hold on
-plot(t_sim,cartTrq)
+% plot(t_sim,gravTrq)
+% hold on
+% plot(t_sim,cartTrq)
 plot(t_sim,muscTrq)
 xlabel('time (s)')
 ylabel('torque (N*m)')
-legend('Gravity','Cart','Muscles')
-% hold on
+% legend('Gravity','Cart','Muscles')
+hold on
 
 fileString = ['kp',num2str(kp),'_kv',num2str(kv),'_ka',num2str(ka),'_delay'...
     ,num2str(delay),'_M',num2str(M),'_l',num2str(l),'_m',num2str(m)...
