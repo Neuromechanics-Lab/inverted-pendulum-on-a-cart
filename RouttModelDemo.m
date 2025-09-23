@@ -7,7 +7,7 @@
 % And common time delay, lambda
 
 clc; clear; 
-% close all;
+close all;
 
 % Defining variables
 M = 73.5; % body mass (kg) (73.5kg = 50th percentile for women in US)
@@ -50,7 +50,11 @@ cartTrq = []; gravTrq = []; muscTrq = [];
 for iter = 2000:2000+size(temp_t,2)
     [dX,cart_trq,gravity_trq,musc_trq] = dPendulumDemo(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay);
     new_x1 = x_sim(iter,1)+timestep*dX(1,:);
-    new_x2 = x_sim(iter,2)+timestep*dX(2,:);
+    if new_x1>=deg2rad(90)
+            new_x2 = 0;
+    else 
+        new_x2 = x_sim(iter,2)+timestep*dX(2,:);
+    end 
     x_sim = [x_sim;new_x1,new_x2];
     t_sim = [t_sim;(iter-2000)*timestep];
     ang_acc = [ang_acc;dX(2,:)];
@@ -64,7 +68,7 @@ ang_acc = ang_acc(2001:size(ang_acc,1),:);
 
 % plot result (cart acc, ang, ang vel, ang acc, trqs)
 % figure;
-numplots = 17;
+numplots = 22;
 subplot(numplots,1,1:2)
 plot(temp_t, temp_acc);
 ylabel('cart acceleration')
@@ -103,5 +107,5 @@ legend('Gravity','Cart','Muscles')
 % fileString = ['kp',num2str(kp),'_kv',num2str(kv),'_ka',num2str(ka),'_delay'...
 %     ,num2str(delay),'_M',num2str(M),'_l',num2str(l),'_m',num2str(m)...
 %     ,'_xa',num2str(x_a),'_ya',num2str(y_a)];
-% figName = ['ModelOutput_',fileString,'.fig'];
+% figName = ['Output/ModelOutput_',fileString,'.fig'];
 % savefig(figName)
