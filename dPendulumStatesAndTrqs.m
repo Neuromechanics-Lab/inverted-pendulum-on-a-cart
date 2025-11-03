@@ -5,6 +5,17 @@
 
 function [dX,cart_trq,gravity_trq,musc_trq] = dPendulumStatesAndTrqs(t, X, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay)
 % X = [angle; angular velocity]
+% if iter>4000
+%         disp(iter)
+% end 
+
+% cart_acc = ppval(cart_acc_spline,t(iter));
+
+% cartVel = fnint(cart_acc_spline);
+% cart_vel = ppval(cartVel,t(iter));
+
+% cartPos = fnint(cartVel);
+% cart_pos = ppval(cartPos,t(iter));
 
 if abs(X(iter-1,1))>=deg2rad(90) % making the pendulum stop falling once it hits the cart
     X(iter,2)=0;
@@ -12,7 +23,10 @@ if abs(X(iter-1,1))>=deg2rad(90) % making the pendulum stop falling once it hits
     gravity_trq = 0;
     musc_trq = 0;
     total_ang_acc = 0;
-else 
+else
+    % if iter>2002
+    %     disp(iter)
+    % end 
     cart_trq = ((M+m)*ppval(cart_acc_spline,t(iter))*cos(X(iter,1)+theta_a)*l_lumped);                              
     gravity_trq = ((M+m)*9.81*sin(X(iter,1)+theta_a)*l_lumped);
 
