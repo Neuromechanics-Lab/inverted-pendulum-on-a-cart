@@ -9,7 +9,7 @@
 clc; clear; 
 close all;
 
-str = '_leanGoal';
+str = '_5cmBack_heavyTheta';
 
 % Defining variables
 M = 73.5; % body mass (kg) (73.5kg = 50th percentile for women in US)
@@ -17,7 +17,7 @@ M = 73.5; % body mass (kg) (73.5kg = 50th percentile for women in US)
 h = 1.612; % overall height (m) (1.612m = 50th percentile for women in US)
 l = 0.543*h; % body COM height (m) (avg COM height in women is 0.543*overall height)
 x_a = l; % added mass height (m)
-y_a = 0.15; % added mass horizontal offset from pendulum arm (m)
+y_a = 0.15; % added mass horizontal offset from pendulum arm (m), >0 is front-loaded, <0 is back-loaded
 leaningStart = 1; % binary variable to decide if the pendulum will start at a lean to compensate for added mass (1) or at theta zero (0)
 
 % kp = 0; % angle gain
@@ -27,10 +27,11 @@ delay = 0; % common time delay (ms), must be <2s and must be an integer
 
 simTime = 2; % how much time is simulated (seconds)
 timestep = 0.001;
-pertDuration = 10; % number of time steps cart takes to accelerate and decelerate
+pertDuration = 20; % number of time steps cart takes to accelerate and decelerate
 cart_acc_time = 500; % number of time steps before cart begins accelerating
 cart_dec_time = 1000; % number of time steps before cart begins decelerating
-pertMag = 25; % max magnitude of cart acceleration (cm)
+pertMag = 5; % max magnitude of cart position (cm)
+pertDir = 1; % 1 = cart moves right (backward pert), -1 = cart moves left (forward pert)
 
 output = 0;
 
@@ -45,8 +46,10 @@ output = 0;
 % dec_end = cart_dec_time+pertDuration;
 
 % Looping through potential gain values to make surf and contour plots
-kp_array = 500:100:9000; kv_array = 500:100:9000;
-m_array = 0:10:70;
+kp_array = 100:50:2000; kv_array = 100:50:2000;
+% kp_array = 1:1:100; kv_array = 1:1:100;
+% m_array = 0:1:20;
+m_array = 0:10:50;
 
 % settlingTimes = []; 
 % muscGrossWork = [];
@@ -65,7 +68,7 @@ OVsAtMin = zeros(3, length(m_array));
 peakTrqsAtMin = zeros(size(m_array));
 peakCOMangDispAtMin = zeros(size(m_array));
 
-for i = 1:8
+for i = 1:length(m_array)
     m = m_array(i);
     % theta_a = atan((m*y_a)/(M*l+m*x_a));
     % l_lumped = sqrt(((M*l+m*x_a)/(M+m))^2+((m*y_a)/(M+m))^2);
@@ -85,7 +88,7 @@ for i = 1:8
 
             [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, muscAvgTrq,muscTrq,x_sim,t_sim]...
              = inverted_pendulum_on_cart_added_mass_SRM_func(output,kp,kv,ka,delay,m,y_a,M,h,l,x_a,leaningStart,...
-            simTime,timestep,pertDuration,cart_acc_time,cart_dec_time,pertMag);
+            simTime,timestep,pertDuration,cart_acc_time,cart_dec_time,pertMag,pertDir);
 
             % % use the forward Euler method to find solution with the time delay
             % x_sim = zeros(2000,2); % x_sim = [angle, angular velocity]
@@ -143,7 +146,7 @@ for i = 1:8
             thetaDotSumSqrd(kp_iter,kv_iter) = sum(x_sim(:,2).^2);
 
             peakTrqs(kp_iter,kv_iter) = max(abs(muscTrq));
-            peakCOMangDisp(kp_iter,kv_iter) = abs(max(x_sim(:,1))-min(x_sim(1,1)));
+            peakCOMangDisp(kp_iter,kv_iter) = max(abs(x_sim(:,1)-x_sim(1,1)));
         end
     end 
 
@@ -154,9 +157,33 @@ close(loading);
 % Second attempt at a cost function, making adjustable weights for outcome variables
 
 % Assigning weights
+
+% First weights (established pre foot and muscles)
+% C1 = 1; % Torque sum
+% C2 = 10^7; % Theta 
+% C3 = 0.5*10^7; % Theta dot 
+
+% New weights (adjusted to induce energy/stability tradeoff)
 C1 = 1; % Torque sum
 C2 = 10^7; % Theta 
-C3 = 0.5*10^7; % Theta dot 
+C3 = 10^5; % Theta dot 
+
+% CF 3
+% C1 = 1; % Torque sum
+% C2 = 9*10^5; % Theta 
+% C3 = 0.9*10^5; % Theta dot 
+
+% CF 2
+% C1 = 1; % Torque sum
+% C2 = 10^5; % Theta
+% C3 = 10^5; % Theta dot 
+
+% CF 1
+% C1 = 1; % Torque sum
+% C2 = 10^6; % Theta
+% C3 = 10^5.25; % Theta dot 
+
+
 % C1 = 1; % Torque sum
 % C2 = 1; % Theta
 % C3 = 1; % Theta dot 
@@ -164,9 +191,10 @@ C3 = 0.5*10^7; % Theta dot
 OV1 = C1*muscSumTrqSqrd;
 OV2 = C2*thetaSumSqrd;
 OV3 = C3*thetaDotSumSqrd;
-CF = C1*muscSumTrqSqrd+C2*thetaSumSqrd+C3*thetaDotSumSqrd;
+% CF = C1*muscSumTrqSqrd+C2*thetaSumSqrd+C3*thetaDotSumSqrd;
+CF = C1*muscSumTrqSqrd+(C2*thetaSumSqrd+C3*thetaDotSumSqrd)/2;
 minCFval = min(CF,[],"all");
-[minCFx, minCFy] = find(CF==minCFval);
+[minCFx, minCFy] = find(CF==minCFval,1,'first');
 % minGains = [minGains; kp_array(minCFx), kv_array(minCFy)];
 minGains(:,i) = [kp_array(minCFx); kv_array(minCFy)];
 % minGains(2,i) = kv_array(minCFy);
@@ -176,7 +204,7 @@ OVsAtMin(:,i) = [OV1(minCFx,minCFy); OV2(minCFx,minCFy); OV3(minCFx,minCFy)];
 % OVsAtMin(2,i) = OV2(minCFx,minCFy);
 % OVsAtMin(3,i) = OV3(minCFx,minCFy);
 peakTrqsAtMin(i) = peakTrqs(minCFx,minCFy);
-peakCOMangDispAtMin(i) = peakCOMangDisp(minCFx,minCFy);
+peakCOMangDispAtMin(i) = rad2deg(peakCOMangDisp(minCFx,minCFy));
 
 CFstr = ['CF = ',num2str(C1),'*sum(muscTrq^2)+',num2str(C2),'*sum(theta^2)+',num2str(C3),'*sum(theta dot^2)'];
 fig=figure;
