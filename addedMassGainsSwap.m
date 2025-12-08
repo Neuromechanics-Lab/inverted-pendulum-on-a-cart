@@ -7,7 +7,7 @@
 clc; clear;
 close all;
 
-str = '_5cmBack_heavyTheta';
+str = '_5cmBack_newPert_CF3_noFoot';
 load(['addedMassSweepVars',str,'.mat'])
 m_array = 0:10:50;
 
@@ -25,11 +25,11 @@ leaningStart = 1; % binary variable to decide if the pendulum will start at a le
 
 simTime = 2; % how much time is simulated (seconds)
 timestep = 0.001;
-pertDuration = 20; % number of timesteps cart takes to accelerate and decelerate
-cart_acc_time = 500; % number of time steps before cart begins accelerating
-cart_dec_time = 1000; % number of time steps before cart begins decelerating
-pertMag = 5; % max magnitude of cart position (cm)
-pertDir = 1; % 1 = cart moves right, -1 = cart moves left
+pertDuration = 150; % number of timesteps cart takes to accelerate and decelerate
+cart_acc_time = 5; % number of time steps before cart begins accelerating
+cart_dec_time = 255; % number of time steps before cart begins decelerating
+pertMag = 2.5; % max magnitude of cart acceleration (m/s^2)
+pertDir = -1; % 1 = cart moves right, -1 = cart moves left
 
 peakCOMangDisp_noAdapt = zeros(1,length(m_array));
 peakTrqs_noAdapt = zeros(1,length(m_array));
@@ -65,12 +65,12 @@ for i = 1:length(m_array)
     % C1 = 1; % Torque sum
     % C2 = 10^5; % Theta 
     % C3 = 10^5; % Theta dot 
-    % C1 = 1; % Torque sum
-    % C2 = 9*10^5; % Theta 
-    % C3 = 0.9*10^5; % Theta dot 
     C1 = 1; % Torque sum
-    C2 = 10^7; % Theta 
-    C3 = 10^5; % Theta dot 
+    C2 = 9*10^5; % Theta 
+    C3 = 0.9*10^5; % Theta dot 
+    % C1 = 1; % Torque sum
+    % C2 = 10^7; % Theta 
+    % C3 = 10^5; % Theta dot 
 
     OV1 = C1*muscSumTrqSqrd;
     OV2 = C2*thetaSumSqrd;

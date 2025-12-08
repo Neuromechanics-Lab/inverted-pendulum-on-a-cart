@@ -38,11 +38,11 @@ for i = 1:length(m_array)
 
     simTime = 2; % how much time is simulated (seconds)
     timestep = 0.001;
-    pertDuration = 20; % number of timesteps cart takes to accelerate and decelerate
-    cart_acc_time = 500; % number of time steps before cart begins accelerating
-    cart_dec_time = 1000; % number of time steps before cart begins decelerating
-    pertMag = 5; % max magnitude of cart position (cm)
-    pertDir = -1; % 1 = cart moves right, -1 = cart moves left
+    pertDuration = 150; % number of timesteps cart takes to accelerate and decelerate
+    cart_acc_time = 5; % number of time steps before cart begins accelerating
+    cart_dec_time = 255; % number of time steps before cart begins decelerating
+    pertMag = 2.5; % max magnitude of cart acceleration (m/s^2)
+    pertDir = 1; % 1 = cart moves right, -1 = cart moves left
 
     [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, muscAvgTrq,muscTrq,x_sim,t_sim]...
         = inverted_pendulum_on_cart_added_mass_SRM_func(output,kp,kv,ka,delay,m,y_a,M,h,l,x_a,leaningStart,...
