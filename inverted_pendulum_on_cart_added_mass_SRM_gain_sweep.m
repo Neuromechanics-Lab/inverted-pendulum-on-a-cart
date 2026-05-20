@@ -9,7 +9,7 @@
 clc; clear; 
 close all;
 
-str = '_5cmBack_heavyTheta';
+str = '_NP01pert_muscAct';
 
 % Defining variables
 M = 73.5; % body mass (kg) (73.5kg = 50th percentile for women in US)
@@ -25,13 +25,13 @@ leaningStart = 1; % binary variable to decide if the pendulum will start at a le
 ka = 0; % angular acceleration gain (infinitely expanding sin wave when ka>=59)
 delay = 0; % common time delay (ms), must be <2s and must be an integer
 
-simTime = 2; % how much time is simulated (seconds)
-timestep = 0.001;
-pertDuration = 20; % number of time steps cart takes to accelerate and decelerate
-cart_acc_time = 500; % number of time steps before cart begins accelerating
-cart_dec_time = 1000; % number of time steps before cart begins decelerating
-pertMag = 5; % max magnitude of cart position (cm)
-pertDir = 1; % 1 = cart moves right (backward pert), -1 = cart moves left (forward pert)
+% simTime = 2; % how much time is simulated (seconds)
+% timestep = 0.001;
+% pertDuration = 150; % number of timesteps cart takes to accelerate and decelerate
+% cart_acc_time = 5; % number of time steps before cart begins accelerating
+% cart_dec_time = 255; % number of time steps before cart begins decelerating
+% pertMag = 2.5; % max magnitude of cart acceleration (m/s^2)
+% pertDir = -1; % 1 = cart moves right, -1 = cart moves left
 
 output = 0;
 
@@ -87,8 +87,7 @@ for i = 1:length(m_array)
             waitbar(progress/numVals,loading)
 
             [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, muscAvgTrq,muscTrq,x_sim,t_sim]...
-             = inverted_pendulum_on_cart_added_mass_SRM_func(output,kp,kv,ka,delay,m,y_a,M,h,l,x_a,leaningStart,...
-            simTime,timestep,pertDuration,cart_acc_time,cart_dec_time,pertMag,pertDir);
+             = inverted_pendulum_on_cart_added_mass_SRM_func(output,kp,kv,ka,delay,m,y_a,M,h,l,x_a,leaningStart);
 
             % % use the forward Euler method to find solution with the time delay
             % x_sim = zeros(2000,2); % x_sim = [angle, angular velocity]
@@ -164,14 +163,14 @@ close(loading);
 % C3 = 0.5*10^7; % Theta dot 
 
 % New weights (adjusted to induce energy/stability tradeoff)
-C1 = 1; % Torque sum
-C2 = 10^7; % Theta 
-C3 = 10^5; % Theta dot 
+% C1 = 1; % Torque sum
+% C2 = 10^7; % Theta 
+% C3 = 10^5; % Theta dot 
 
 % CF 3
-% C1 = 1; % Torque sum
-% C2 = 9*10^5; % Theta 
-% C3 = 0.9*10^5; % Theta dot 
+C1 = 1; % Torque sum
+C2 = 9*10^5; % Theta 
+C3 = 0.9*10^5; % Theta dot 
 
 % CF 2
 % C1 = 1; % Torque sum
@@ -197,7 +196,7 @@ minCFval = min(CF,[],"all");
 [minCFx, minCFy] = find(CF==minCFval,1,'first');
 % minGains = [minGains; kp_array(minCFx), kv_array(minCFy)];
 minGains(:,i) = [kp_array(minCFx); kv_array(minCFy)];
-% minGains(2,i) = kv_array(minCFy);
+% minGains(2,i) = kv_array(minCFy);gh 
 % minCFvals = [minCFvals; minCFval];
 minCFvals(i) = minCFval;
 OVsAtMin(:,i) = [OV1(minCFx,minCFy); OV2(minCFx,minCFy); OV3(minCFx,minCFy)];

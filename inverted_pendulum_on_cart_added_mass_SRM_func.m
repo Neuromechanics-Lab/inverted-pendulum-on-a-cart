@@ -12,12 +12,12 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
     simTime,timestep,pertDuration,cart_acc_time,cart_dec_time,pertMag,pertDir)
 
     arguments
-        % Defining variables  
+        % Defining variables  y y
         output = 1;
 
-        kp = 450; % angle gain
-        kv = 350; % angular velocity gain
-        ka = 0; % angular acceleration gain
+        kp = 450; % angle gain 450
+        kv = 350; % angular velocity gain 350
+        ka = 0; % angular acceleration gain 0
         delay = 0; % common time delay (ms), must be <2s and must be an integer
         
         m = 0; % added mass (kg) (9kg = CDC recommended weight gain for 30 weeks pregant w normal starting BMI)
@@ -30,10 +30,10 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
 
         simTime = 2; % how much time is simulated (seconds)
         timestep = 0.001;
-        pertDuration = 20; % number of timesteps cart takes to accelerate and decelerate
-        cart_acc_time = 500; % number of time steps before cart begins accelerating
-        cart_dec_time = 1000; % number of time steps before cart begins decelerating
-        pertMag = 5; % max magnitude of cart position (cm)
+        pertDuration = 145; % number of timesteps cart takes to accelerate and decelerate
+        cart_acc_time = 0; % number of time steps before cart begins accelerating
+        cart_dec_time = 480; % number of time steps before cart begins decelerating
+        pertMag = 2.7; % max magnitude of cart acceleration (m/s^2)
         pertDir = 1; % 1 = cart moves right, -1 = cart moves left
     end
 
@@ -44,11 +44,11 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
     % Defining cart acceleration profile 
     temp_t = 0:timestep:simTime;
     temp_acc = zeros(size(temp_t));
-    temp_acc((0:pertDuration)+cart_acc_time) = ...
-        -cos((0:pertDuration)*2*pi/pertDuration)+1; % acceleration
-    temp_acc((0:pertDuration)+cart_dec_time) = ...
-        cos((0:pertDuration)*2*pi/pertDuration)-1; % deceleration 
-    cart_acc_spline = spline(temp_t,temp_acc*(pertMag)*pertDir);
+    temp_acc((1:pertDuration)+cart_acc_time) = ...
+        -cos((1:pertDuration)*2*pi/pertDuration)+1; % acceleration
+    temp_acc((1:pertDuration)+cart_dec_time) = ...
+        cos((1:pertDuration)*2*pi/pertDuration)-1; % deceleration 
+    cart_acc_spline = spline(temp_t,temp_acc*0.5*(pertMag)*pertDir);
     dec_end = cart_dec_time+pertDuration;
     
     % use the forward Euler method to find solution with the time delay
@@ -63,7 +63,8 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
     settlingTime = simTime;
     prevMuscTrq = 0;
     for iter = 2000:2000+size(temp_t,2)
-        [dX,cart_trq,gravity_trq,musc_trq,cart_acc,cart_vel,cart_pos] = dPendulumStatesAndTrqs(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay, prevMuscTrq, timestep, cartAcc, cartVel, cartPos);
+        % [dX,cart_trq,gravity_trq,musc_trq,cart_acc,cart_vel,cart_pos] = dPendulumStatesAndTrqs(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay, prevMuscTrq, timestep, cartAcc, cartVel, cartPos);
+        [dX,cart_trq,gravity_trq,musc_trq,cart_acc,cart_vel,cart_pos] = dPendulumStatesAndTrqsWActivation(t_sim, x_sim, ang_acc, cart_acc_spline, M, m, l_lumped, theta_a, I_lumped, kp, kv, ka, iter, delay, prevMuscTrq, timestep, cartAcc, cartVel, cartPos);
         new_x1 = x_sim(iter,1)+timestep*dX(1,:);
         if abs(new_x1)>=deg2rad(90)
             new_x2 = 0;
@@ -114,7 +115,7 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
         % fig=figure;
         numplots = 22;
         subplot(numplots,1,1:2)
-        plot(temp_t, temp_acc*(pertMag));
+        plot(temp_t, temp_acc*0.5*(pertMag));
         ylabel('cart acc (m/s^2)')
         % plot(t_sim, cartPos*100)
         % ylabel('cart pos (m)')
@@ -155,7 +156,7 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
         % ylabel('musc trq (N*m/kg)')
         ylabel('musc trq (N*m)')
         % legend('Gravity','Cart','Muscles')
-        ylim([-60 20])
+        % ylim([-60 20])
         xlim([0 length(t_sim)/1000])
         hold on
     
@@ -170,14 +171,33 @@ function [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, musc
         % plot(t_sim,cartVel);
         % 
         % figure;
+        % subplot(3,1,1)
         % plot(t_sim,cartAcc);
+        % ylabel('Cart Acc (m/s^2)')
         % 
-        figure;
-        plot(t_sim,cartVel)
-        ylabel('Cart Vel')
+        % subplot(3,1,2)
+        % plot(t_sim,cartVel)
+        % ylabel('Cart Vel (m/s)')
+        % 
+        % subplot(3,1,3)
+        % plot(t_sim,cartPos)
+        % xlabel('Time (s)')
+        % ylabel('Cart Pos (m)')
+        
+        % figure;
+        % numplots=3;
+        % subplot(numplots,1,1)
+        % plot(temp_t, temp_acc*0.5*(pertMag));
+        % ylabel('cart acc (m/s^2)')
+        % xlim([0 length(t_sim)/1000])
+        % subplot(numplots,1,2)
+        % plot(t_sim,cartVel)
+        % ylabel('cart vel (m/s)')
+        % xlim([0 length(t_sim)/1000])
+        % subplot(numplots,1,3)
+        % plot(t_sim,cartPos)
+        % ylabel('cart pos (m)')
+        % xlim([0 length(t_sim)/1000])
 
-        figure;
-        plot(t_sim,cartPos)
-        ylabel('Cart Pos')
     end 
 end 

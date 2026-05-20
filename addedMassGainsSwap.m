@@ -1,14 +1,17 @@
 % Autumn Routt
 % 10/23/2025
-% Generating figues to show the outcome variables 
+% Generating figures to show the outcome variables 
 % for different added mass conditions at their optimal gain values
 % and at each other's optimal gain values.
 
 clc; clear;
 close all;
 
-str = '_5cmBack_newPert_CF3_noFoot';
-load(['addedMassSweepVars',str,'.mat'])
+% addpath('C:\Users\aroutt3\OneDrive - Georgia Institute of Technology\Modelling & Simulation\Old Inverted Pendulum Outputs\Dec 2025')
+addpath('/Users/autumnroutt/Library/CloudStorage/OneDrive-GeorgiaInstituteofTechnology/Modelling & Simulation/inverted-pendulum-on-a-cart-MEW06724D/Output')
+str = '_NP01pert_muscTrq';
+% load(['addedMassSweepVars',str,'.mat'])
+load(['fullOutput',str,'.mat'])
 m_array = 0:10:50;
 
 output = 1;
@@ -23,13 +26,13 @@ l = 0.543*h; % body COM height (m) (avg COM height in women is 0.543*overall hei
 x_a = l; % added mass height (m)
 leaningStart = 1; % binary variable to decide if the pendulum will start at a lean to compensate for added mass (1) or at theta zero (0)
 
-simTime = 2; % how much time is simulated (seconds)
-timestep = 0.001;
-pertDuration = 150; % number of timesteps cart takes to accelerate and decelerate
-cart_acc_time = 5; % number of time steps before cart begins accelerating
-cart_dec_time = 255; % number of time steps before cart begins decelerating
-pertMag = 2.5; % max magnitude of cart acceleration (m/s^2)
-pertDir = -1; % 1 = cart moves right, -1 = cart moves left
+% simTime = 2; % how much time is simulated (seconds)
+% timestep = 0.001;
+% pertDuration = 150; % number of timesteps cart takes to accelerate and decelerate
+% cart_acc_time = 5; % number of time steps before cart begins accelerating
+% cart_dec_time = 255; % number of time steps before cart begins decelerating
+% pertMag = 2.5; % max magnitude of cart acceleration (m/s^2)
+% pertDir = -1; % 1 = cart moves right, -1 = cart moves left
 
 peakCOMangDisp_noAdapt = zeros(1,length(m_array));
 peakTrqs_noAdapt = zeros(1,length(m_array));
@@ -44,8 +47,7 @@ for i = 1:length(m_array)
     kv = minGains(2,1); % angular velocity gain
 
     [settlingTime, muscPower, muscGrossWork, muscNetWork, muscImpulse, muscAvgTrq, muscTrq, x_sim, t_sim]...
-    = inverted_pendulum_on_cart_added_mass_SRM_func(output,kp,kv,ka,delay,m,y_a,M,h,l,x_a,leaningStart,...
-    simTime,timestep,pertDuration,cart_acc_time,cart_dec_time,pertMag,pertDir);
+    = inverted_pendulum_on_cart_added_mass_SRM_func(output,kp,kv,ka,delay,m,y_a,M,h,l,x_a,leaningStart);
 
     peakCOMangDisp_noAdapt(1,i) = rad2deg(max(abs(x_sim(:,1)-x_sim(1,1))));
     peakTrqs_noAdapt(1,i) = max(abs(muscTrq));
@@ -300,3 +302,13 @@ saveas(gcf,['DeltaPercentGainsComp',str,'.png'])
 % legend('0kg - Adapted','10kg - Adapted','20kg - Adapted','30kg - Adapted','40kg - Adapted','50kg - Adapted','60kg - Adapted','70kg - Adapted')
 % savefig(['ThetaVsThetaDotAdapted',str])
 % saveas(gcf,['ThetaVsThetaDotAdapted',str,'.png'])
+
+figure;
+plot(m_array, minGains(1,:))
+hold on;
+plot(m_array, minGains(2,:))
+xlabel('Added Mass (kg)')
+ylabel('Gain Values')
+legend('Kp','Kv')
+savefig(['GainVals',str])
+saveas(gcf,['GainVals',str,'.png'])

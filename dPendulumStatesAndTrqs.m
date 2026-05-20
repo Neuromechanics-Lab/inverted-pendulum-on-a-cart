@@ -52,24 +52,24 @@ else
         % display('capped CW')
     end 
 
-    % musc_act = -kp*(X(iter-delay,1)+theta_a)-kv*X(iter-delay,2)-ka*ang_acc(iter-delay,1);
-    % 
-    % % A "foot" which dictates max torque before a step would be necessary
-    % if musc_act > (((M+m)*9.81)/2)*d2
-    %     % display('before')
-    %     % musc_trq
-    %     % display('after')
-    %     musc_act = (((M+m)*9.81)/2)*d2;
-    %     % display('capped CCW')
-    % elseif musc_act < -1*(((M+m)*9.81)/2)*d1
-    %     % display('before')
-    %     % musc_trq
-    %     % display('after')
-    %     musc_act = -1*(((M+m)*9.81)/2)*d1;
-    %     % display('capped CW')
-    % end 
-    % 
-    % musc_trq = musc_act*exp((-1*iter)/40); % Lockhart & Ting 2007, need to change this if timestep is no longer 1ms
+    % % musc_act = -kp*(X(iter-delay,1)+theta_a)-kv*X(iter-delay,2)-ka*ang_acc(iter-delay,1);
+    % % 
+    % % % A "foot" which dictates max torque before a step would be necessary
+    % % if musc_act > (((M+m)*9.81)/2)*d2
+    % %     % display('before')
+    % %     % musc_trq
+    % %     % display('after')
+    % %     musc_act = (((M+m)*9.81)/2)*d2;
+    % %     % display('capped CCW')
+    % % elseif musc_act < -1*(((M+m)*9.81)/2)*d1
+    % %     % display('before')
+    % %     % musc_trq
+    % %     % display('after')
+    % %     musc_act = -1*(((M+m)*9.81)/2)*d1;
+    % %     % display('capped CW')
+    % % end 
+    % % 
+    % % musc_trq = musc_act*exp((-1*iter)/40); % Lockhart & Ting 2007, need to change this if timestep is no longer 1ms
 
     % capping muscle torque derivative 
     % (using ankle torque ramp rate from Jakubowski 2024 as a reference)
